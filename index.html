@@ -475,77 +475,80 @@
     }
 
     // ----------------------------------------------------
-    // AUTH: LOGIN Y LOGOUT
+        // ----------------------------------------------------
+    // AUTH: LOGIN, RECUPERACIÓN DE CONTRASEÑA Y LOGOUT
     // ----------------------------------------------------
     async function iniciarSesion(e) {
-  e.preventDefault();
+      e.preventDefault();
 
-  const email = document.getElementById('loginEmail').value.trim();
-  const password = document.getElementById('loginPassword').value;
-  const errBox = document.getElementById('loginError');
-  const btn = document.getElementById('btnLoginSubmit');
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      const errBox = document.getElementById('loginError');
+      const btn = document.getElementById('btnLoginSubmit');
 
-  errBox.classList.add('hidden');
-  errBox.textContent = '';
-  btn.disabled = true;
-  btn.textContent = 'Ingresando...';
+      errBox.classList.add('hidden');
+      errBox.textContent = '';
+      btn.disabled = true;
+      btn.textContent = 'Ingresando...';
 
-  try {
-    const { error } = await supabaseClient.auth.signInWithPassword({
-      email,
-      password
-    });
+      try {
+        const { error } = await supabaseClient.auth.signInWithPassword({
+          email,
+          password
+        });
 
-    if (error) throw error;
+        if (error) throw error;
 
-  } catch (err) {
-    errBox.textContent =
-      'Error de autenticación: ' +
-      (err.message || 'Credenciales inválidas o falla de conexión.');
+      } catch (err) {
+        errBox.textContent =
+          'Error de autenticación: ' +
+          (err.message || 'Credenciales inválidas o falla de conexión.');
 
-    errBox.classList.remove('hidden');
+        errBox.classList.remove('hidden');
 
-  } finally {
-    btn.disabled = false;
-    btn.textContent = 'Ingresar';
-  }
-}
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Ingresar';
+      }
+    }
 
+    async function recuperarContrasena() {
+      const email = document.getElementById('loginEmail').value.trim();
 
-async function recuperarContrasena() {
-  const email = document.getElementById('loginEmail').value.trim();
+      if (!email) {
+        alert('Primero ingresá tu correo electrónico.');
+        document.getElementById('loginEmail').focus();
+        return;
+      }
 
-  if (!email) {
-    alert('Primero ingresá tu correo electrónico.');
-    document.getElementById('loginEmail').focus();
-    return;
-  }
+      try {
+        const { error } =
+          await supabaseClient.auth.resetPasswordForEmail(email, {
+            redirectTo: 'https://altoque-spec.github.io/gestionplomeria/'
+          });
 
-  try {
-    const { error } =
-      await supabaseClient.auth.resetPasswordForEmail(email, {
-        redirectTo: 'https://altoque-spec.github.io/gestionplomeria/'
-      });
+        if (error) throw error;
 
-    if (error) throw error;
+        alert(
+          'Te enviamos un correo para restablecer tu contraseña. ' +
+          'Revisá también Spam o Correo no deseado.'
+        );
 
-    alert(
-      'Te enviamos un correo para restablecer tu contraseña. ' +
-      'Revisá también Spam o Correo no deseado.'
-    );
+      } catch (err) {
+        alert(
+          'No se pudo enviar el correo: ' +
+          (err.message || 'Error desconocido.')
+        );
+      }
+    }
 
-  } catch (err) {
-    alert('No se pudo enviar el correo: ' + err.message);
-  }
-}
+    async function cerrarSesion() {
       const { error } = await supabaseClient.auth.signOut();
+
       if (error) {
         console.error('Error al cerrar sesión:', error.message);
       }
     }
-
-    // ----------------------------------------------------
-    // LÓGICA DE COBRO Y VALIDACIÓN DE MONTOS
     // ----------------------------------------------------
     function calcularMontosCobranza(precioInput, montoPagadoInput, estadoPago) {
       let precio = parseFloat(precioInput) || 0;
@@ -765,7 +768,10 @@ function aplicarFiltrosYRenderizar() {
   });
 
   renderizarTabla(filtrados);
-}
+} 
+
+
+function renderizarTabla(lista) {
       const tbody = document.getElementById('tablaServiciosBody');
       tbody.innerHTML = '';
 
